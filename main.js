@@ -51,12 +51,15 @@ function randomInt(min, max) {
 // Random birthdate (ISO format)
 function randomBirthdate(minAge, maxAge) {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const birthYear = randomInt(currentYear - maxAge, currentYear - minAge);
-    const birthMonth = randomInt(0, 11);
-    const birthDay = randomInt(1, 28);
-    const birthdate = new Date(birthYear, birthMonth, birthDay);
-    return birthdate.toISOString();
+
+    // Earliest and latest allowed birthdates
+    const minBirthdate = new Date(now.getTime() - maxAge * 365.25 * 24*60*60*1000);
+    const maxBirthdate = new Date(now.getTime() - minAge * 365.25 * 24*60*60*1000);
+
+    // Random timestamp between
+    const randomTime = randomInt(minBirthdate.getTime(), maxBirthdate.getTime());
+
+    return new Date(randomTime).toISOString();
 }
 
 // Generate single employee object with properties:
@@ -88,16 +91,38 @@ function generateEmployee(minAge, maxAge) {
 // minAge/maxAge: age ranges for birthdates
 // Return in a loop an array of employee objects
 function generateEmployees(count, minAge, maxAge) {
-    const employees = [];
-    for (let i = 0; i < count; i++) {
-        employees.push(generateEmployee(minAge, maxAge));
+    const UNIQUE_COUNT = 50;
+    const identityPool = [];
+
+// Pre-generate 50 unique identities (NO birthdate here)
+    for (let i = 0; i < UNIQUE_COUNT; i++) {
+        const e = generateEmployee(minAge, maxAge);
+
+        // overwrite birthdate so it doesn't get reused
+        delete e.birthdate;
+
+        identityPool[i] = e;
     }
+
+    // Build final list
+    const employees = new Array(count);
+
+    for (let i = 0; i < count; i++) {
+        const template = identityPool[i % UNIQUE_COUNT];
+
+        // New employee = template + NEW birthdate
+        employees[i] = {
+            ...template,
+            birthdate: randomBirthdate(minAge, maxAge)
+        };
+    }
+
     return employees;
 }
 
 // export main function
 export function main(dtoIn) {
     // dtoIn = { count, minAge, maxAge }
-    return generateEmployees(dtoIn.count, dtoIn.minAge, dtoIn.maxAge);
+    return generateEmployees(dtoIn.count, dtoIn.age.min, dtoIn.age.max);
 }
 

@@ -95,16 +95,8 @@ function generateEmployees(count, minAge, maxAge) {
     return employees;
 }
 
-// Example usage
-const numberOfEmployees = 10;
-const minAge = 25;
-const maxAge = 60;
-
-const result = generateEmployees(numberOfEmployees, minAge, maxAge);
-console.log(result);
-
 // export main function
-function main(dtoIn) {
+export function main(dtoIn) {
     // dtoIn = { count, minAge, maxAge }
     return generateEmployees(dtoIn.count, dtoIn.minAge, dtoIn.maxAge);
 }
